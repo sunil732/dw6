@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="a3d1de26-2d5d-4b10-979c-40ea699f3a0a" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="dw6Flow" doc:id="bd3ea3fc-64ea-4b7d-b3a4-0dd19f7b8e36" >
+		<http:listener doc:name="Listener" doc:id="4c5b54d9-3ee8-49c8-9554-b3c2aad75d7c" config-ref="HTTP_Listener_config" path="/dw6"/>
+		<ee:transform doc:name="Transform Message" doc:id="24046f4a-8544-447c-9797-ce2e62da1107" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var breakfastmenu=readUrl("classpath://examples/foodxml.xml","application/xml")
+---
+//breakfastmenu..*food
+//breakfastmenu..*food.price
+//payload..*food.price?
+breakfastmenu.. *food
+//filter $."calories" as Number > 899
+//distinctBy $."calories" 
+//minBy $."calories"
+//maxBy $."calories"
+//orderBy -$."calories"
+groupBy $."calories"
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5a0a17db-862e-40a3-8599-a50ac16c5827" message="#[payload]"/>
+	</flow>
+</mule>
